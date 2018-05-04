@@ -1,6 +1,8 @@
 ---
 layout: post
-title: 180503
+title: "180503 <LOCK_TASK_MODE>"
+date:   2018-05-03 20:06:30 +0900
+categories: jekyll update
 ---
 /frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java에 선언된 부분이다.
 
