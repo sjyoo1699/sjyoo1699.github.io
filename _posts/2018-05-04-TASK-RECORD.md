@@ -1,6 +1,8 @@
 ---
 layout: post
-title: 180504 <TaskRecord.java>
+title: "180504 <TaskRecord.java>"
+date:   2018-05-04 16:06:30 +0900
+categories: jekyll update
 ---
 
  처음 추측한 대로라면 TaskRecord는 ActivityStack에서 activityRecord로 리스트를 만들고, 이 리스트를 통해 TaskRecord를 생성할 것이라고 추측하였다. 그 이유는 TaskRecord가 attribute로 activityRecord의 리스트를 가지고 있고, activityStack을 가지고 있기 때문이었다. 따라서, 이에 대한 답을 얻기 위해 TaskRecord의 생성자를 살펴보았다.
