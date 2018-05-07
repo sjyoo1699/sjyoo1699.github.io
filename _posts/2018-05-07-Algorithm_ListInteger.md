@@ -5,9 +5,7 @@ date:   2018-05-07 22:00:30 +0900
 categories: jekyll update
 ---
 
-https://swexpertacademy.com/main/code/problem/problemDetail.do?contestProbId=AWHz7xD6A20DFAVB&categoryId=AWHz7xD6A20DFAVB&categoryType=CODE
-
-3809. 화섭이의 정수 나열
+[SW Expert Academy D3 3809. 화섭이의 정수 나열](https://swexpertacademy.com/main/code/problem/problemDetail.do?contestProbId=AWHz7xD6A20DFAVB&categoryId=AWHz7xD6A20DFAVB&categoryType=CODE)
 
 ```
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,3 +152,4 @@ class Solution
 
 
 처음 풀어 본 문제라 그런지 짜고 나서 수정하다보니 코드가 많이 더러워진 감이 있고, 그다지 효율적이지도 못한 듯 하다. 
+걸린 시간 : 1시간 30분 ~ 2
