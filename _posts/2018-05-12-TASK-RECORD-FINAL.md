@@ -5,7 +5,7 @@ date:   2018-05-12 22:00:30 +0900
 categories: jekyll update
 ---
 
-TaskRecord.java의 속성 중에 isRecents 라는 Boolean 속성이 있는데, 이 변수가 뜻하는 것은, 해당 Task가 현재 내가 작업중이던 Task인지를 나타내는 변수이다. 즉 isRecents가 false이면, 해당 Task는 만들어져 있지 않은 상태라는 것이다. 그리고 Task간의 연결을 나타내는 변수들이 존재해서 Task간의 연결을 할 수 있고, Task의 생성자는 총 3개인데, 하나는 voice interactor Task를 생성하는 생성자, 하나는 activity들의 list를 가지고 있지 않은, 빈 Task의 생성자, 하나는 일반적으로 생각하는 activity의 list들과 acitivity Stack을 가지는 TaskRecord를 만드는 생성자, 이렇게 3개의 생성자가 존재한다. 나머지 다른 함수들은 Activity의 화면에서의 크기, task의 정보, 등등을 관리하는 함수들이었다.
+TaskRecord.java의 속성 중에 inRecents 라는 Boolean 속성이 있는데, 이 변수가 뜻하는 것은, 해당 Task가 현재 내가 작업중이던 Task인지를 나타내는 변수이다. 즉 isRecents가 false이면, 해당 Task는 만들어져 있지 않은 상태라는 것이다. 이 Recents는 list라고 주석에 명시되어있는데, 해당 list는 아마도 ActivityManager에 존재할 것 같다. 그리고 Task간의 연결을 나타내는 변수들이 존재해서 Task간의 연결을 할 수 있고, Task의 생성자는 총 3개인데, 하나는 voice interactor Task를 생성하는 생성자, 하나는 activity들의 list를 가지고 있지 않은, 빈 Task의 생성자, 하나는 일반적으로 생각하는 activity의 list들과 acitivity Stack을 가지는 TaskRecord를 만드는 생성자, 이렇게 3개의 생성자가 존재한다. 나머지 다른 함수들은 Activity의 화면에서의 크기, task의 정보, 등등을 관리하는 함수들이었다.
 
 Task Record의 구조는 이제 어느정도 명확해졌는데, activity list를 가지고 있고, 이 list들은 task가 만들어질 때,  xml 파일을 파싱해서 그 구조대로 추가되는 activity list이다. 즉, 구조대로 생성되었으니 history를 가지는 list이다.  list의 제일 마지막 원소가 root activity가 된다.
 
