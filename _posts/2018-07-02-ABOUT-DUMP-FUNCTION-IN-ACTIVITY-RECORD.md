@@ -220,7 +220,7 @@ IO 스트림에 데이터를 출력할 때 자바 언어의 스트림에서 제�
 아래는 PrintWriter와 BufferedWriter, PrintWriter+BufferdWriter(wrapper), FileWriter 네 개의 클래스를 통해 짧은 문자열을 수만번에
 걸쳐 저장하는 경우에 성능을 비교한 그래프이다. 
 
-
+![fig43-1](https://user-images.githubusercontent.com/28890428/42145627-45fc6732-7dfd-11e8-918d-a7eed7c1cd37.jpg)
 
 - x 축은 반복횟수이며 64회 반복당 1씩 증가하며 총 6만4천번을 의미한다.
 - y 축은 소요시간은 밀리초, 남은 자유 메모리는 MB이며 처음 힙 메모리의 크기는 64MB이다. 
