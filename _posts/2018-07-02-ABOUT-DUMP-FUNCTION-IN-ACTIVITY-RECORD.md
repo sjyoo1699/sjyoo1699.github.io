@@ -316,5 +316,7 @@ FastPrintWriter의 경로는
 import com.android.internal.util.FastPrintWriter;
 이것인데, 아직 이 파일을 찾아내지는 못하였다.(internal을 못 찾았음)
 
-FastPrintWriter가 어떻게 구현되어있는 지는 아직 저 파일을 찾아내지 못해서 확신할 수 없지만, 아마도 PrintWriter + BufferedWriter를 
-사용하는 것으로 보여진다. (dump 메소드를 사용하면서 flush()도 호출하는 것을 보아서 더 확실해졌다.)
+FastPrintWriter가 어떻게 구현되어있는 지는 아직 저 파일을 찾아내지 못해서 확신할 수 없지만, 
+아마 PrintWriter + BufferedWriter를 사용하는 것으로 보여진다. (dump 메소드를 사용하면서 flush()도 호출하는 것을 보아서 더 확실해졌다.)
+
+이렇게 되면 dump 메소드에서 성능 개선점을 찾고자 했던 것은 다시 원점으로 돌아가게 된다.
