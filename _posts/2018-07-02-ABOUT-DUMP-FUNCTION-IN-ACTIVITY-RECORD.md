@@ -238,3 +238,83 @@ printWriter는 간편함, bufferedWriter는 버퍼를 사용하여 좀 더 효�
 
 AOSP에 우리 팀이 참여함으로서 달성하고자 하는 목표는 '안드로이드 OS의 성능 개선'이다.
 이러한 목표에는 printWriter보다는 bufferedWriter를 활용하는 것이 좋을 것 같다.
+
+***
+
+이제 이러한 dump 함수가 얼마나 빈번하게 호출이 되는 지 알아봐야 하고, 
+위에서 IO 스트림에 대해 공부하면서 알게 된 사실로 PrintWriter 클래스를 
+
+```
+PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("foo.txt"))); 
+```
+
+이런 식으로 만들면 BufferedWriter의 장점과 PrintWriter의 장점을 모두 사용할 수 있다. 
+위의 dump 함수의 인자로 받은 PrintWriter가 이렇게 만들어져 있다면 dump 함수에서 성능 개선점은 찾기 힘들 것이다.
+
+그래서 ActivityManager의 코드를 찾아보던 중 이런 코드를 찾았다.
+
+'''
+public boolean stopBinderTrackingAndDump(ParcelFileDescriptor fd) throws RemoteException {
+        try {
+            synchronized (this) {
+                mBinderTransactionTrackingEnabled = false;
+                // TODO: hijacking SET_ACTIVITY_WATCHER, but should be changed to its own
+                // permission (same as profileControl).
+                if (checkCallingPermission(android.Manifest.permission.SET_ACTIVITY_WATCHER)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    throw new SecurityException("Requires permission "
+                            + android.Manifest.permission.SET_ACTIVITY_WATCHER);
+                }
+
+                if (fd == null) {
+                    throw new IllegalArgumentException("null fd");
+                }
+
+                PrintWriter pw = new FastPrintWriter(new FileOutputStream(fd.getFileDescriptor()));
+                pw.println("Binder transaction traces for all processes.\n");
+                for (ProcessRecord process : mLruProcesses) {
+                    if (!processSanityChecksLocked(process)) {
+                        continue;
+                    }
+
+                    pw.println("Traces for process: " + process.processName);
+                    pw.flush();
+                    try {
+                        TransferPipe tp = new TransferPipe();
+                        try {
+                            process.thread.stopBinderTrackingAndDump(tp.getWriteFd());
+                            tp.go(fd.getFileDescriptor());
+                        } finally {
+                            tp.kill();
+                        }
+                    } catch (IOException e) {
+                        pw.println("Failure while dumping IPC traces from " + process +
+                                ".  Exception: " + e);
+                        pw.flush();
+                    } catch (RemoteException e) {
+                        pw.println("Got a RemoteException while dumping IPC traces from " +
+                                process + ".  Exception: " + e);
+                        pw.flush();
+                    }
+                }
+                fd = null;
+                return true;
+            }
+        } finally {
+            if (fd != null) {
+                try {
+                    fd.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+'''
+
+위의 코드에서 보면 PrintWriter를 상속받은 FastPrintWriter가 있는 것을 볼 수 있다. 
+FastPrintWriter의 경로는 
+import com.android.internal.util.FastPrintWriter;
+이것인데, 아직 이 파일을 찾아내지는 못하였다.(internal을 못 찾았음)
+
+FastPrintWriter가 어떻게 구현되어있는 지는 아직 저 파일을 찾아내지 못해서 확신할 수 없지만, 아마도 PrintWriter + BufferedWriter를 
+사용하는 것으로 보여진다. (dump 메소드를 사용하면서 flush()도 호출하는 것을 보아서 더 확실해졌다.)
