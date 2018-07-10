@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "180706 WHERE TO RUN THE ACTIVITY"
+title: "180706 WHERE TO RUN THE ACTIVITY 01"
 date:   2018-07-06 14:00:30 +0900
 categories: jekyll update
 ---
