@@ -148,12 +148,14 @@ Instrumentation의 하위 **ActivityResult** 객체를 만들어서 Thread에 �
 
 먼저 Instrumentation 클래스에 대해 android developers에서 찾아보면 이러한 설명이 나온다.
 
-**Base class for implementing application instrumentation code. 
+**
+Base class for implementing application instrumentation code. 
 When running with instrumentation turned on, 
 this class will be instantiated for you before any of the application code, 
 allowing you to monitor all of the interaction the system has with the application. 
 An Instrumentation implementation is described to the system through an AndroidManifest.xml's <instrumentation> tag.
-  
+** 
+ 
 그리고 이 클래스의 nested class로는
 
 **Instrumentation.ActivityMonitor**
