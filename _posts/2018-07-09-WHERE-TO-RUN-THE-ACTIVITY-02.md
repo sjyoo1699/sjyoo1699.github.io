@@ -164,6 +164,8 @@ Instrumentation의 하위 **ActivityResult** 객체를 만들어서 Thread에 �
 
 그리고 이 클래스의 nested class로는
 
+***
+
 **Instrumentation.ActivityMonitor**
 
 Information about a particular kind of Intent that is being monitored. 
@@ -171,6 +173,8 @@ Information about a particular kind of Intent that is being monitored.
 **Instrumentation.ActivityResult**
 
 Description of a Activity execution result to return to the original activity.
+
+***
 
 위 2개가 있다.
 
