@@ -11,7 +11,7 @@ Activity를 스타트하는 방법은 여러가지가 있겠지만, 일반적으
 
 따라서, 먼저 저 함수를 찾아보고자 한다.
 
-startActivity 함수는 우리가 개발할 때 작성하는 Activity 클래스 내부에서 사용할 수 있는데,
+**startActivity** 함수는 우리가 개발할 때 작성하는 Activity 클래스 내부에서 사용할 수 있는데,
 
 이 클래스는 Activity클래스를 상속받는다. Activity의 위치는 
 
@@ -56,7 +56,7 @@ framewokrk/base/core/java/android/app/Activity.java
 
 위의 코드가 startActivity의 함수 설명과 함수 구현부분이다. 내부를 보면 startActivity는
 
-startActivityForResult를 default 값을 넣어서 호출하고 있다.
+**startActivityForResult**를 default 값을 넣어서 호출하고 있다.
 
 아래는 startActivityForResult 함수이다.
 
@@ -132,11 +132,11 @@ startActivityForResult를 default 값을 넣어서 호출하고 있다.
     }
 ```
 
-위의 코드에서 mParent는 Activity이다.
+위의 코드에서 mParent는 **Activity**이다.
 
-Instrumentation 클래스와 ActivityThread(mMainThread) 클래스는 무엇인지 아직 모르겠지만, 
+**Instrumentation** 클래스와 **ActivityThread(mMainThread)** 클래스는 무엇인지 아직 모르겠지만, 
 
-Instrumentation의 하위 ActivityResult 객체를 만들어서 Thread에 보내는데,
+Instrumentation의 하위 **ActivityResult** 객체를 만들어서 Thread에 보내는데,
 
 이 ActivityResult가 실제 Activity를 뜻하는 것 같다.
 
@@ -148,7 +148,7 @@ Instrumentation의 하위 ActivityResult 객체를 만들어서 Thread에 보내
 
 먼저 Instrumentation 클래스에 대해 android developers에서 찾아보면 이러한 설명이 나온다.
 
-Base class for implementing application instrumentation code. 
+**Base class for implementing application instrumentation code. 
 When running with instrumentation turned on, 
 this class will be instantiated for you before any of the application code, 
 allowing you to monitor all of the interaction the system has with the application. 
@@ -156,11 +156,11 @@ An Instrumentation implementation is described to the system through an AndroidM
   
 그리고 이 클래스의 nested class로는
 
-Instrumentation.ActivityMonitor
+**Instrumentation.ActivityMonitor**
 
 Information about a particular kind of Intent that is being monitored. 
 
-Instrumentation.ActivityResult
+**Instrumentation.ActivityResult**
 
 Description of a Activity execution result to return to the original activity.
 
