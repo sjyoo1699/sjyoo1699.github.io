@@ -28,4 +28,16 @@ Activity도 마찬가지로 Activity 하나와 ActivityRecord가 하나씩 바�
 
 하나의 Task에 두 개의 어플리케이션이 들어가게 되는 경우도 있다.
 
-framewokrk/base/core/java/android/app
+***
+
+현재 우리가 살펴보고 있는 경로는 
+frameworks/base/core/java/android/app
+frameworks/base/services/core/java/com/android/server/am
+
+이렇게 두 개가 있는데, 이 경로에 대해서도 명확한 답을 들을 수 있었다.
+
+소스코드가 워낙 방대하다 보니, 우리가 현재 보고 있는 경로가 제대로 보고 있는 게 맞는 지 의구심이 들었는데 
+
+위의 두 경로가 app 부분이 개발자가 만드는 어플의 실제 뼈대가 되는 부분이고, am이 Activity Manager에 대한 부분으로
+
+저 두 경로를 살펴보면 된다고 말씀해주셔서, 우리의 프로젝트의 진행방향이 조금 더 확실해졌다.
