@@ -28,6 +28,8 @@ Activity도 마찬가지로 Activity 하나와 ActivityRecord가 하나씩 바�
 
 하나의 Task에 두 개의 어플리케이션이 들어가게 되는 경우도 있다.
 
+이 ActivityRecord를 ActivityManager가 WindowManager에게 그려달라고 보내면 WindowManager가 화면에 그려주게 된다.
+
 ***
 
 현재 우리가 살펴보고 있는 경로는 
