@@ -15,22 +15,33 @@ categories: jekyll update
 
 ActivityManager의 구조는 아래와 같다.
 
+
 ![activitymanager](https://user-images.githubusercontent.com/28890428/42816029-4df84bbe-8a04-11e8-8c7b-abaea4390f38.PNG)
+
+
 <ActivityManager의 구조>
 
-위의 그림에서 TaskRecord와 ActivityRecord가 나오는데, 지금까지는 Task 하나에 해당 Task의 정보를 가지고 있는 TaskRecord가 바인딩되고,
+위의 그림에서 TaskRecord와 ActivityRecord가 나오는데, 
+
+지금까지는 Task 하나에 해당 Task의 정보를 가지고 있는 TaskRecord가 바인딩되고,
 
 Activity도 마찬가지로 Activity 하나와 ActivityRecord가 하나씩 바인딩 되어 있는 것으로 알고 있었다.
 
 하지만 멘토님과 이야기해본 결과 ActivityRecord, TaskRecord는 그 자체로 하나의 Task와 Activity인 것이고,
 
-원칙적으로는 하나의 어플리케이션은 하나의 Task이다. 하지만, Task의 플래그를 다른 Task에서 사용할 수 있도록 하면
+원칙적으로는 하나의 어플리케이션은 하나의 Task이다. 
+
+하지만, Task의 플래그를 다른 Task에서 사용할 수 있도록 하면
 
 하나의 Task에 두 개의 어플리케이션이 들어가게 되는 경우도 있다.
 
 이 ActivityRecord를 ActivityManager가 WindowManager에게 그려달라고 보내면 WindowManager가 화면에 그려주게 된다.
 
+
+
 ***
+
+
 
 현재 우리가 살펴보고 있는 경로는 
 
