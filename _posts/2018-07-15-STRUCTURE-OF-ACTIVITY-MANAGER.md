@@ -31,6 +31,7 @@ Activity도 마찬가지로 Activity 하나와 ActivityRecord가 하나씩 바�
 ***
 
 현재 우리가 살펴보고 있는 경로는 
+
 frameworks/base/core/java/android/app
 frameworks/base/services/core/java/com/android/server/am
 
