@@ -27,3 +27,5 @@ Activity도 마찬가지로 Activity 하나와 ActivityRecord가 하나씩 바�
 원칙적으로는 하나의 어플리케이션은 하나의 Task이다. 하지만, Task의 플래그를 다른 Task에서 사용할 수 있도록 하면
 
 하나의 Task에 두 개의 어플리케이션이 들어가게 되는 경우도 있다.
+
+framewokrk/base/core/java/android/app
