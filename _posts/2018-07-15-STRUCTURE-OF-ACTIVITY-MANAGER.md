@@ -11,7 +11,19 @@ categories: jekyll update
 
 하지만 이번에 우리 프로젝트의 멘토님(이원영 선배님)을 만나 이야기를 하고 ACTIVITY MANAGER의 구조와 여러 가지 애매했던 것들이 명확해졌다.
 
-처음에 시스템이 부팅되면, 시스템 서비스가 시작되고 시스템 서비스는 ActivityManager를 실행하는데 
+처음에 시스템이 부팅되면, 시스템 서비스가 시작되고 시스템 서비스는 ActivityManager를 실행하는데
 
 ActivityManager의 구조는 아래와 같다.
 
+![activitymanager](https://user-images.githubusercontent.com/28890428/42816029-4df84bbe-8a04-11e8-8c7b-abaea4390f38.PNG)
+<ActivityManager의 구조>
+
+위의 그림에서 TaskRecord와 ActivityRecord가 나오는데, 지금까지는 Task 하나에 해당 Task의 정보를 가지고 있는 TaskRecord가 바인딩되고,
+
+Activity도 마찬가지로 Activity 하나와 ActivityRecord가 하나씩 바인딩 되어 있는 것으로 알고 있었다.
+
+하지만 멘토님과 이야기해본 결과 ActivityRecord, TaskRecord는 그 자체로 하나의 Task와 Activity인 것이고,
+
+원칙적으로는 하나의 어플리케이션은 하나의 Task이다. 하지만, Task의 플래그를 다른 Task에서 사용할 수 있도록 하면
+
+하나의 Task에 두 개의 어플리케이션이 들어가게 되는 경우도 있다.
