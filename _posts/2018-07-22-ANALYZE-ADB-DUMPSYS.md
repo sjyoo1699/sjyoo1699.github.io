@@ -45,6 +45,8 @@ categories: jekyll update
 
 아직은 만들어져있지 않다. 위 2개의 태스크는 특수한 목적을 위해 만들어진 태스크로 보인다.
 
+***
+
 2. 기기 부팅 후 액티비티들
 
 ![adb02](https://user-images.githubusercontent.com/28890428/43468233-72714aca-951e-11e8-8106-a85655cb6915.PNG)
@@ -56,6 +58,8 @@ categories: jekyll update
 현재 0번 스택(홈스택)만 있는 상황이고 해당 스택에는 2번 태스크가 있고 2번 태스크 내부에는 
 
 단 하나의 액티비티가 있는 걸 볼 수 있다. 이 액티비티는 홈 런처의 액티비티이다.
+
+***
 
 3. 카카오톡 어플리케이션 실행
 
@@ -81,6 +85,8 @@ categories: jekyll update
 
 채팅 목록, 친구 목록 등은 fragment로 구현되어 있기 때문이다.
 
+***
+
 4. 홈 버튼을 누른 후, 인터넷 브라우저 실행
 
 ![adb05](https://user-images.githubusercontent.com/28890428/43468791-c99be6d8-951f-11e8-88ca-0878ff43edc3.PNG)
@@ -96,6 +102,8 @@ categories: jekyll update
 
 0번 스택 홈스택은 변화가 없다.
 
+***
+
 5. 카카오톡의 채팅 룸에서 유튜브 링크 클릭
 
 ![adb08](https://user-images.githubusercontent.com/28890428/43469173-8d3e9036-9520-11e8-8e19-6be6841530de.PNG)
@@ -109,6 +117,8 @@ categories: jekyll update
 새로운 액티비티가 생겨서 유튜브의 동영상 코드를 이용하여 인앱형태로 유튜브를 보여주는 형식이다.
 
 그렇다면 인앱 형식이 아닌 곳에서 유튜브 동영상 링크를 열면 어떻게 될까?
+
+***
 
 6. 메세지로 받은 유튜브 링크 클릭
 
