@@ -7,7 +7,7 @@ categories: jekyll update
 
 WHERE TO RUN THE ACTIVITY 03 포스팅에 이어서, 이번 포스팅에서는 AcltivityManagerService에서
 
-**startActivity 함수를 호출하는 과정**과, **thread 부분**에 대해서 다룰 것이다.
+**startActivity 함수를 호출하는 과정**에 대해서 다룰 것이다.
 
 먼저 ActivityResult 클래스에서 execStartActivity 함수를 보면 
 
