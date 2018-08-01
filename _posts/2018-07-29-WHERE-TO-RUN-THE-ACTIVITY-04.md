@@ -363,13 +363,269 @@ startActivityAsUser 함수를 보면 인자로 받은 값들을 이용하여, Ac
 
 위 코드에서 동기화하는 부분이 실제 액티비티를 만들어서 실행시키는 부분인 것 같다.
 
-그리고 그 결과를 int 형의 res 라는 변수에 미리 defined 된 int 값으로 저장 후 리턴하는 식인데,
+mService는 ActivityManagerService이다.
 
-이 res 값이 어떻게 쓰이는가 하면,
+위의 코드를 보면 실행을 준비하는 부분과, 실제 실행을 하는 부분이 있는데,
 
-ActivityResult 클래스의 checkStartActivityResult 함수를 호출할 때 쓰인다.
+mSupervisor.mWaitingActivityLaunched.add(outResult);
 
-아래는 checkStartActivityResult 함수이다.
+이 부분이 StackSupervisor에게 결과 ActvitiyRecord를 넘겨주고, StackSupervisor가 해당 ActivityRecord를
+
+추가할 때까지 mService는 기다리는 코드가 아마 실제 실행을 하는 부분인 것 같다.
+
+그래서 위의 mWaitingActivityLaunched를 찾아보았다.
+
+***
+```
+    /** List of processes waiting to find out about the next launched activity. */
+    final ArrayList<WaitResult> mWaitingActivityLaunched = new ArrayList<>();
+```
+
+위의 함수를 보면 outResult.result가 START_TASK_TO_FRONT 가 되거나, timeout이 되거나, outResultWho가 null이
+
+아니게 될 때까지 기다린다.
+
+따라서 StackSupervisor에서 mWaitingActivityLaunched 가 사용되는 곳을 찾아보았다.
+
+***
+```
+    void reportTaskToFrontNoLaunch(ActivityRecord r) {
+        boolean changed = false;
+        for (int i = mWaitingActivityLaunched.size() - 1; i >= 0; i--) {
+            WaitResult w = mWaitingActivityLaunched.remove(i);
+            if (w.who == null) {
+                changed = true;
+                // Set result to START_TASK_TO_FRONT so that startActivityMayWait() knows that
+                // the starting activity ends up moving another activity to front, and it should
+                // wait for this new activity to become visible instead.
+                // Do not modify other fields.
+                w.result = START_TASK_TO_FRONT;
+            }
+        }
+        if (changed) {
+            mService.notifyAll();
+        }
+    }
+
+    void reportActivityLaunchedLocked(boolean timeout, ActivityRecord r,
+            long thisTime, long totalTime) {
+        boolean changed = false;
+        for (int i = mWaitingActivityLaunched.size() - 1; i >= 0; i--) {
+            WaitResult w = mWaitingActivityLaunched.remove(i);
+            if (w.who == null) {
+                changed = true;
+                w.timeout = timeout;
+                if (r != null) {
+                    w.who = new ComponentName(r.info.packageName, r.info.name);
+                }
+                w.thisTime = thisTime;
+                w.totalTime = totalTime;
+                // Do not modify w.result.
+            }
+        }
+        if (changed) {
+            mService.notifyAll();
+        }
+    }
+```
+
+위의 두 함수가 mService를 깨우는 함수인데, 위의 함수는 정상적으로 실행이 된 경우고,
+
+아래의 함수는 실행이 Locked된 상황인 것 같다.
+
+따라서, 위의 reportTaskToFrontNoLaunch 함수가 어디서 call 되는 지 찾아보았다.
+
+call이 되는 곳은 ActivityStarter 클래스였다.
+
+```
+    void postStartActivityProcessing(
+            ActivityRecord r, int result, int prevFocusedStackId, ActivityRecord sourceRecord,
+            ActivityStack targetStack) {
+        if (ActivityManager.isStartResultFatalError(result)) {
+            return;
+        }
+        // We're waiting for an activity launch to finish, but that activity simply
+        // brought another activity to front. Let startActivityMayWait() know about
+        // this, so it waits for the new activity to become visible instead.
+        if (result == START_TASK_TO_FRONT && !mSupervisor.mWaitingActivityLaunched.isEmpty()) {
+            mSupervisor.reportTaskToFrontNoLaunch(mStartActivity);
+        }
+        int startedActivityStackId = INVALID_STACK_ID;
+        final ActivityStack currentStack = r.getStack();
+        if (currentStack != null) {
+            startedActivityStackId = currentStack.mStackId;
+        } else if (mTargetStack != null) {
+            startedActivityStackId = targetStack.mStackId;
+        }
+        if (startedActivityStackId == DOCKED_STACK_ID) {
+            final ActivityStack homeStack = mSupervisor.getStack(HOME_STACK_ID);
+            final boolean homeStackVisible = homeStack != null && homeStack.isVisible();
+            if (homeStackVisible) {
+                // We launch an activity while being in home stack, which means either launcher or
+                // recents into docked stack. We don't want the launched activity to be alone in a
+                // docked stack, so we want to immediately launch recents too.
+                if (DEBUG_RECENTS) Slog.d(TAG, "Scheduling recents launch.");
+                mWindowManager.showRecentApps(true /* fromHome */);
+            }
+            return;
+        }
+        boolean clearedTask = (mLaunchFlags & (FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK))
+                == (FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK) && (mReuseTask != null);
+        if (startedActivityStackId == PINNED_STACK_ID && (result == START_TASK_TO_FRONT
+                || result == START_DELIVERED_TO_TOP || clearedTask)) {
+            // The activity was already running in the pinned stack so it wasn't started, but either
+            // brought to the front or the new intent was delivered to it since it was already in
+            // front. Notify anyone interested in this piece of information.
+            mService.mTaskChangeNotificationController.notifyPinnedActivityRestartAttempt(
+                    clearedTask);
+            return;
+        }
+    }
+```
+
+위 함수가 call 되는 곳을 다시 찾아보니, ActivityStackSupervisor의 startActivityFromRecentsInner 함수였다.
+
+```
+    final int startActivityFromRecentsInner(int taskId, Bundle bOptions) {
+        final TaskRecord task;
+        final int callingUid;
+        final String callingPackage;
+        final Intent intent;
+        final int userId;
+        final ActivityOptions activityOptions = (bOptions != null)
+                ? new ActivityOptions(bOptions) : null;
+        final int launchStackId = (activityOptions != null)
+                ? activityOptions.getLaunchStackId() : INVALID_STACK_ID;
+        if (StackId.isHomeOrRecentsStack(launchStackId)) {
+            throw new IllegalArgumentException("startActivityFromRecentsInner: Task "
+                    + taskId + " can't be launch in the home/recents stack.");
+        }
+        mWindowManager.deferSurfaceLayout();
+        try {
+            if (launchStackId == DOCKED_STACK_ID) {
+                mWindowManager.setDockedStackCreateState(
+                        activityOptions.getDockCreateMode(), null /* initialBounds */);
+                // Defer updating the stack in which recents is until the app transition is done, to
+                // not run into issues where we still need to draw the task in recents but the
+                // docked stack is already created.
+                deferUpdateBounds(RECENTS_STACK_ID);
+                mWindowManager.prepareAppTransition(TRANSIT_DOCK_TASK_FROM_RECENTS, false);
+            }
+            task = anyTaskForIdLocked(taskId, MATCH_TASK_IN_STACKS_OR_RECENT_TASKS_AND_RESTORE,
+                    launchStackId);
+            if (task == null) {
+                continueUpdateBounds(RECENTS_STACK_ID);
+                mWindowManager.executeAppTransition();
+                throw new IllegalArgumentException(
+                        "startActivityFromRecentsInner: Task " + taskId + " not found.");
+            }
+            // Since we don't have an actual source record here, we assume that the currently
+            // focused activity was the source.
+            final ActivityStack focusedStack = getFocusedStack();
+            final ActivityRecord sourceRecord =
+                    focusedStack != null ? focusedStack.topActivity() : null;
+            if (launchStackId != INVALID_STACK_ID) {
+                if (task.getStackId() != launchStackId) {
+                    task.reparent(launchStackId, ON_TOP, REPARENT_MOVE_STACK_TO_FRONT, ANIMATE,
+                            DEFER_RESUME, "startActivityFromRecents");
+                }
+            }
+            // If the user must confirm credentials (e.g. when first launching a work app and the
+            // Work Challenge is present) let startActivityInPackage handle the intercepting.
+            if (!mService.mUserController.shouldConfirmCredentials(task.userId)
+                    && task.getRootActivity() != null) {
+                final ActivityRecord targetActivity = task.getTopActivity();
+                mService.mActivityStarter.sendPowerHintForLaunchStartIfNeeded(true /* forceSend */,
+                        targetActivity);
+                mActivityMetricsLogger.notifyActivityLaunching();
+                mService.moveTaskToFrontLocked(task.taskId, 0, bOptions, true /* fromRecents */);
+                mActivityMetricsLogger.notifyActivityLaunched(ActivityManager.START_TASK_TO_FRONT,
+                        targetActivity);
+                // If we are launching the task in the docked stack, put it into resizing mode so
+                // the window renders full-screen with the background filling the void. Also only
+                // call this at the end to make sure that tasks exists on the window manager side.
+                if (launchStackId == DOCKED_STACK_ID) {
+                    setResizingDuringAnimation(task);
+                }
+                mService.mActivityStarter.postStartActivityProcessing(task.getTopActivity(),
+                        ActivityManager.START_TASK_TO_FRONT,
+                        sourceRecord != null
+                                ? sourceRecord.getTask().getStackId() : INVALID_STACK_ID,
+                        sourceRecord, task.getStack());
+                return ActivityManager.START_TASK_TO_FRONT;
+            }
+            callingUid = task.mCallingUid;
+            callingPackage = task.mCallingPackage;
+            intent = task.intent;
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+            userId = task.userId;
+            int result = mService.startActivityInPackage(callingUid, callingPackage, intent, null,
+                    null, null, 0, 0, bOptions, userId, task, "startActivityFromRecents");
+            if (launchStackId == DOCKED_STACK_ID) {
+                setResizingDuringAnimation(task);
+            }
+            return result;
+        } finally {
+            mWindowManager.continueSurfaceLayout();
+        }
+    }
+```
+위 함수에서 실제로 액티비티가 화면에 보여지는 듯 하다.
+
+위 함수가 call 되는 곳은 아직 찾지 못하였고, 
+
+ActivityManager에서 위의 startActivityMayWait 함수가 call 되는 곳을 찾았다.
+
+```
+    @Override
+    public final int startActivityFromRecents(int taskId, Bundle options) {
+        if (checkCallingPermission(START_TASKS_FROM_RECENTS) != PackageManager.PERMISSION_GRANTED) {
+            String msg = "Permission Denial: startActivityFromRecents called without " +
+                    START_TASKS_FROM_RECENTS;
+            Slog.w(TAG, msg);
+            throw new SecurityException(msg);
+        }
+        return startActivityFromRecentsInner(taskId, options);
+    }
+    final int startActivityFromRecentsInner(int taskId, Bundle options) {
+        final TaskRecord task;
+        final int callingUid;
+        final String callingPackage;
+        final Intent intent;
+        final int userId;
+        synchronized (this) {
+            task = recentTaskForIdLocked(taskId);
+            if (task == null) {
+                throw new IllegalArgumentException("Task " + taskId + " not found.");
+            }
+            callingUid = task.mCallingUid;
+            callingPackage = task.mCallingPackage;
+            intent = task.intent;
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+            userId = task.userId;
+        }
+        return startActivityInPackage(callingUid, callingPackage, intent, null, null, null, 0, 0,
+                options, userId, null, task);
+    }
+    final int startActivityInPackage(int uid, String callingPackage,
+            Intent intent, String resolvedType, IBinder resultTo,
+            String resultWho, int requestCode, int startFlags, Bundle options, int userId,
+            IActivityContainer container, TaskRecord inTask) {
+        userId = handleIncomingUser(Binder.getCallingPid(), Binder.getCallingUid(), userId,
+                false, ALLOW_FULL_ONLY, "startActivityInPackage", null);
+        // TODO: Switch to user app stacks here.
+        int ret = mStackSupervisor.startActivityMayWait(null, uid, callingPackage, intent,
+                resolvedType, null, null, resultTo, resultWho, requestCode, startFlags,
+                null, null, null, options, userId, container, inTask);
+        return ret;
+    }
+```
+
+***
+
+execStartActivity 함수에서 checkStartActivityResult 함수를 사용하는데,
+
+단순히 activity가 잘 실행이 되었나를 판단하는 함수인 듯 하다.
 
 ```
     /** @hide */
@@ -423,4 +679,8 @@ ActivityResult 클래스의 checkStartActivityResult 함수를 호출할 때 쓰
 
 startActivityMayWait 함수 내에서 이미 액티비티가 만들어지고 실행이 되고,
 
-checkStartActivityResult 함수는 그 결과를 체크하는 용도의 함수이다.
+checkStartActivityResult 함수는 그 결과를 체크하는 용도의 함수인 듯 하다.
+
+***
+
+계속 함수가 call 되는 부분을 추적하여 따라갔지만, 아직 그림이 그려지지 않는다.
