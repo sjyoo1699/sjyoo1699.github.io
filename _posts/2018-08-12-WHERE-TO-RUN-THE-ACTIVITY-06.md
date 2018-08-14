@@ -350,3 +350,89 @@ Application을 만들어준다.
 ***
 
 다시 performLaunchActivity 함수로 돌아가서,
+
+ContextImpl 이라는 객체를 만드는데, 이 객체에 대한 설명은 아래와 같다.
+
+```
+/**
+ * Common implementation of Context API, which provides the base
+ * context object for Activity and other application components.
+ */
+```
+
+액티비티의 정보를 저장해놓는 객체인 듯 보인다.
+
+함수를 더 보다보면, mInstrumentation.callActivityOnCreate(activity, r.state);
+
+부분이 보이는데, 아래는 위 함수이다.
+
+```
+    /**
+     * Perform calling of an activity's {@link Activity#onCreate}
+     * method.  The default implementation simply calls through to that method.
+     * 
+     * @param activity The activity being created.
+     * @param icicle The previously frozen state (or null) to pass through to
+     *               onCreate().
+     */
+    public void callActivityOnCreate(Activity activity, Bundle icicle) {
+        if (mWaitingActivities != null) {
+            synchronized (mSync) {
+                final int N = mWaitingActivities.size();
+                for (int i=0; i<N; i++) {
+                    final ActivityWaiter aw = mWaitingActivities.get(i);
+                    final Intent intent = aw.intent;
+                    if (intent.filterEquals(activity.getIntent())) {
+                        aw.activity = activity;
+                        mMessageQueue.addIdleHandler(new ActivityGoing(aw));
+                    }
+                }
+            }
+        }
+        
+        activity.performCreate(icicle);
+        
+        if (mActivityMonitors != null) {
+            synchronized (mSync) {
+                final int N = mActivityMonitors.size();
+                for (int i=0; i<N; i++) {
+                    final ActivityMonitor am = mActivityMonitors.get(i);
+                    am.match(activity, activity, activity.getIntent());
+                }
+            }
+        }
+    }
+```
+
+Activity의 OnCreate 콜백함수를 실행시켜주는 부분으로 보인다.
+
+따라서 위 함수가 끝날때는 이미 Activity의 OnCreate는 Call 된 상태이다.
+
+그래서 다시 performLaunchActivity 함수로 돌아오면 위 함수 이후에 
+
+activity가 불렸는지 확인을 하는데, 불리지 않았다면 Exception을 throw한다.
+
+그리고 그 다음 조건문으로 activity가 finished 상태가 아니라면
+
+activity를 performStart()를 한다.
+
+그 다음 조건문은 Activity가 강제종료되거나 화면회전이 일어났을 때 콜 되는
+
+OnRestoreInstanceState 함수를 호출하는데, savedInstance가 없다면 null로 바로 리턴된다.
+
+그 다음 조건문은 OnPostCreate 함수를 호출하는데, 이 함수는 개발자가 구현하는 함수는 아니고,
+
+시스템 상으로 Activity가 run 되고, 마지막 초기화 작업을 해주는 함수이다.
+
+이 함수까지 콜 된 후, r.paused 를 true로 바꿔주고 mActivities라는 map에
+
+r.token(IBinder), r(ActivityClientRecord)을 넣고 activity를 리턴하는 것으로 함수가 종료된다.
+
+mActivities에 대한 설명은 아래와 같다.
+
+```
+    final HashMap<IBinder, ActivityClientRecord> mActivities
+            = new HashMap<IBinder, ActivityClientRecord>();
+    // List of new activities (via ActivityRecord.nextIdle) that should
+    // be reported when next we idle.
+```
