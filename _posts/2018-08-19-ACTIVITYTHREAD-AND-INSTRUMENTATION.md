@@ -11,9 +11,9 @@ categories: jekyll update
 
 포스팅에서 해당 부분을 찾았었다. 
 
-startActivity 함수 콜을 따라간 것이었는데 단순히 start 부분이 아닌 스케쥴링 과정에서
+startActivity 함수 콜을 따라간 것이었는데 단순히 start 부분이 아닌 다른 생명주기 과정에서
 
-상호 작용하는 부분을 찾고자 ActivityThread와 Instrumentation의 코드를 보았다.
+상호 작용하는 부분을 찾고자 코드를 보았다.
 
 ***
 
