@@ -92,15 +92,21 @@ Message가 Object 같은 스레드 간 통신할 내용을 담으면, Runnable�
 
 ***
 
+ActivityManager와 상호작용에 대해 구글링을 하던 중
+
+\http://ecogeo.tistory.com/253
+
+위 블로그를 찾게 되었는데, 위 블로그의 내용을 보면 ApplicationThread가 ActivityManager와
+
+상호작용하기 위한 객체로 사용된다고 한다.
+
 위의 내용들을 기본적으로 숙지한 채로 ActivtyThread를 살펴보았다.
 
 먼저 ActivityThread 내부에는 inner Class로 ApplicationThread 가 존재한다.
 
-이 ApplicationThread를 통하여 ActivityManager와 상호작용을 하는 것으로 보인다.
+이 객체는 IApplicationThread 를 확장하고 있는데,
 
-ActivityManager가 뭔가 메세지를 보내고 싶으면 ApplicationThread를 통하여 메세지를 보낸다.
-
-ActivityManager는 IApplicationThread를 가지고 있다.
+IApplicationThread는 ActivityManager도 가지고 있다.
 
 아래는 ApplicationThread의 모습이다.
 
